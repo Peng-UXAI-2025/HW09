@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document Classifier</title>
+    
+    <!-- Markdown.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script src="../env.js"></script>
+    <script src="./model_api.js"></script>
+    <script defer src="./file_processor.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            color: #233749;
+            margin-bottom: 30px;
+        }
+
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            width: 960px;
+            gap: 20px;
+        }
+
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .file-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            margin: 10px 0;
+            padding: 5px;
+            border: 1px dashed #ccc;
+            min-height: 50px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 10px;
+            margin: 5px 0;
+            background-color: #e9f0f7;
+            border-radius: 3px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            background-color: #233749;
+            color: white;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #557ba1;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .tag {
+            background-color: #e1ecf4;
+            color: #39739d;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .tag.selected {
+            background-color: #3e7da6;
+            color: white;
+        }
+
+        #results-container {
+            margin-top: 20px;
+            width: 100%;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .result-group {
+            margin-bottom: 15px;
+            border-left: 3px solid #233749;
+            padding-left: 15px;
+        }
+
+        .result-file {
+            margin: 8px 0;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .model-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .model-option {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .model-option.selected {
+            border-color: #233749;
+            background-color: #e9f0f7;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #233749;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .status-error {
+            background-color: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+        
+        .status-info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <h1>HCI Study File Classifier</h1>
+    
+    <div id="main-container">
+        <!-- Status Messages -->
+        <div id="status-container" style="display: none;" class="status-message"></div>
+        
+        <!-- Model Selection -->
+        <div class="panel">
+            <h2>Select Model</h2>
+            <div class="model-selector">
+                <div class="model-option selected" data-model="gpt-4o">
+                    <h3>GPT-4o</h3>
+                    <p>OpenAI's multimodal model</p>
+                </div>
+                <div class="model-option" data-model="gemini-pro">
+                    <h3>Gemini 2.0 Flash</h3>
+                    <p>Google's generative AI model</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tag Configuration -->
+        <div class="panel">
+            <h2>Configure HCI Study Tags</h2>
+            <p>Define tags/categories for classification:</p>
+            <textarea id="tags-input" placeholder="Enter tags separated by commas (e.g., User Research, Interface Design, Usability Testing)">User Research, Interface Design, Usability Testing, User Experience, Information Architecture, Interaction Design, Accessibility, Human Factors, Cognitive Psychology</textarea>
+            <div class="tags-container" id="tags-display"></div>
+        </div>
+        
+        <!-- File Groups -->
+        <div class="panel">
+            <h2>Document Groups</h2>
+            <p>Create groups of related HCI documents to analyze:</p>
+            <div id="file-groups-container">
+                <div class="file-group" data-group-id="group1">
+                    <div class="group-header">
+                        <input type="text" placeholder="Group Name" value="HCI Research Papers">
+                        <button class="button-sm remove-group">Remove Group</button>
+                    </div>
+                    <div class="file-list">
+                        <!-- Files will be added here -->
+                    </div>
+                    <input type="file" multiple class="file-input" accept=".txt" style="display: none;">
+                    <button class="add-files">Add Files</button>
+                </div>
+            </div>
+            <button id="add-group">Add New Group</button>
+        </div>
+        
+        <!-- Processing Controls -->
+        <div class="panel">
+            <h2>Process Documents</h2>
+            <p>Classify the uploaded documents using the selected model:</p>
+            <button id="process-button" disabled>Process All Groups</button>
+            <button id="process-single-group" disabled>Process Selected Group</button>
+            <div class="loading" id="loading-indicator">
+                <div class="spinner"></div>
+                <p>Processing documents, please wait...</p>
+            </div>
+        </div>
+        
+        <!-- Results Display -->
+        <div class="panel">
+            <h2>Classification Results</h2>
+            <div id="results-container">
+                <p>Results will appear here after processing.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
