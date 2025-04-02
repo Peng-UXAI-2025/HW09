@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple API Interface</title>
+    
+    <!-- Markdown.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script src="../env.js"></script>
+    <script src="chatgpt.js"></script>
+    <script defer src="sketch.js"></script>
+    
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #afafaf;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .block {
+            margin: 16px 0;
+            width: 960px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            font-size: 12px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            resize: vertical;
+            color: rgb(53, 53, 53);
+        }
+
+        button {
+            width: 240px;
+            height: 40px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            background-color: #233749;
+            color: white;
+            border-radius: 4px;
+        }
+
+        button:hover{
+            background-color: #557ba1;
+        }
+
+        #response {
+            width: 100%;
+            height: 160px;
+            padding: 8px;
+            color: rgb(23, 19, 66);
+            font-size: 12px;
+            border: 1px solid #ccc;
+            background: #f9f9f9;
+            overflow-y: auto; 
+            overflow-x: hidden;
+            word-wrap: break-word;
+            white-space: normal;
+            max-width: 960px;
+            max-height: 400px;
+        }
+
+        pre {
+            background: #c2c2c2;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        code {
+            font-family: monospace;
+            background: #d4d4d4;
+            padding: 2px 4px;
+            border-radius: 4px;
+            word-wrap: break-word;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="block" id="response">This is ChatGPT</div>
+        <div class="block">
+            <textarea id="prompt" placeholder="Type your question..."></textarea>
+        </div>
+        <div class="block" style="text-align: center;">
+            <button onclick="fetchResponse()">Submit</button>
+        </div>
+        <div class="block" style="text-align: center;">
+            <label>
+                <input type="checkbox" id="searchToggle"> Enable Online Search
+            </label>
+        </div>
+    </div>
+</body>
+</html>
